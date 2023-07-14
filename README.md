@@ -1,59 +1,74 @@
-# Omni CSV Validator
+# CSV Validator 
 
-Omni CSV validator validates CSV files against a schema.
+This library validates CSV files based on a defined schema. It ensures the data meets specified rules.
 
-## Schema
+## Features
 
-The `Config` JSON file is used to define validation rules for a CSV file and has two sections: `global` and `rules`.
+- Validate CSV columns and overall file.
+- Support for common constraints and rules.
 
-### Global
+## Supported Rules
 
-The `global` object defines rules that apply to the entire CSV file.
+- **required**: Ensures the field is not empty.
+- **type**: Validates the data type (integer, string).
+- **unique**: Ensures all values in the field are unique.
+- **min**: Validates that numeric values are above a minimum.
+- **max**: Validates that numeric values are below a maximum.
+- **pattern**: Validates strings against a regex pattern.
+- **is**: Ensures the field matches an exact value.
+
+## Schema Example
 
 ```json
-  "global": {
-    "maxRecords": 100,
-    "maxColumns": 5,
-    "separator": ","
+{
+  "fileMetadata": {
+    "delimiter": ",",
+    "encoding": "UTF-8",
+    "hasHeader": true
   },
-```
-
-- `maxRecords` (integer): This specifies the maximum number of records (lines) that the CSV file should contain.
-- `maxColumns` (integer): This is the maximum number of columns that each record in the CSV file should contain.
-- `separator` (string): This is the character that separates columns within each record (line) in the CSV file.
-
-### Rules
-
-The `rules` object is an array where each item represents a validation rule for a particular column of the CSV. The type of rules we currently support is called `column`.
-
-Each `column` rule includes these properties:
-
-```json
+  "columns": [
     {
-      "type": "column",
-      "column": "Name",
-      "required": true,
-      "dataType": "string"
+      "name": "id",
+      "constraints": {
+        "type": "integer",
+        "unique": true,
+        "required": true
+      }
     },
+    {
+      "name": "name",
+      "constraints": {
+        "type": "string",
+        "required": true,
+        "maxLength": 255
+      }
+    },
+    {
+      "name": "age",
+      "constraints": {
+        "type": "integer",
+        "min": 0,
+        "max": 120
+      }
+    },
+    {
+      "name": "email",
+      "constraints": {
+        "type": "string",
+        "pattern": "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$",
+        "unique": true
+      }
+    }
+  ],
+  "fileConstraints": {
+    "maxRows": 1000,
+    "maxSize": 1048576
+  }
+}
 ```
 
-- `type` (string): This specifies the type of rule. Currently the package only supports `column` type rules.
-- `column` (string): This is the name of the column that the rule applies to.
-- `required` (boolean): This specifies if the column must be present in each record. If `required` is set to true and the column is missing in a record, it will be flagged as an error.
-- `dataType` (string): This specifies the expected data type for the column. Currently `string` and `integer` are supported. If the data in the column does not match the specified data type, it will be flagged as an error.
+### JSON Schema Sections
 
-### Future
-
-For now, our schema supports the `type` value of "column", which allows us to define rule validations for specific CSV columns. Expanding this, we could consider adding additional types that would allow us to do more complex validations. Some of these could include:
-
-1. `"record"`: This could allow us to define rules that validate an entire record (row). For example, we may want to ensure that at least one of several columns is filled, which is not possible with "column"-level validation.
-
-2. `"file"`: This would allow us to define rules that sit at a higher level than our current "maxRecords" and "maxColumns" global rules. Possible `file` level rules could enforce that the file must have a specific set of columns, or that specific columns must appear in a certain order.
-
-3. `"inter-column"`: This could allow validations that span multiple columns. For example, you might want to validate that the value in "start date" column is earlier than the "end date" column in the same record.
-
-4. `"custom"`: For a user-defined rule. The user would provide a custom function that implements their unique rule.
-
-For these new `type` values to work, each would require a different set of additional properties. For example, the `custom` type might need a `customFunction` property that references a user-supplied validation function.
-
-In designing these rule types, you would consider the most common validation scenarios you need to support, beginning with the most general types (like `column`) and adding more specific ones as needed.
+- **fileMetadata**: Contains basic properties about the CSV file like delimiter, encoding, and whether it has a header.
+- **columns**: Defines the columns of the CSV file, including their names and constraints like type, uniqueness, and validation patterns.
+- **fileConstraints**: Specifies overall file limits, such as the maximum number of rows and the maximum file size in bytes.

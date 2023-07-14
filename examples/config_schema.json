@@ -1,0 +1,39 @@
+{
+  "fileMetadata": {
+    "delimiter": ",",
+    "encoding": "UTF-8",
+    "hasHeader": true
+  },
+  "columns": [
+    {
+      "name": "Name",
+      "constraints": {
+        "type": "string",
+        "required": true,
+        "maxLength": 255
+      }
+    },
+    {
+      "name": "Email",
+      "constraints": {
+        "type": "string",
+        "required": true,
+        "pattern": "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$",
+        "unique": true
+      }
+    },
+    {
+      "name": "Age",
+      "constraints": {
+        "type": "int",
+        "required": true,
+        "min": 0,
+        "max": 120
+      }
+    }
+  ],
+  "fileConstraints": {
+    "maxRows": 1000,
+    "maxSize": 1048576
+  }
+}
